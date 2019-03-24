@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,29 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef OPENCV_GPU_WARP_REDUCE_HPP__
+#define OPENCV_GPU_WARP_REDUCE_HPP__
 
-#include "opencv2/core/core_c.h"
-#include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
+namespace cv { namespace gpu { namespace device
+{
+    template <class T>
+    __device__ __forceinline__ T warp_reduce(volatile T *ptr , const unsigned int tid = threadIdx.x)
+    {
+        const unsigned int lane = tid & 31; // index of thread in warp (0..31)
 
-#endif
+        if (lane < 16)
+        {
+            T partial = ptr[tid];
+
+            ptr[tid] = partial = partial + ptr[tid + 16];
+            ptr[tid] = partial = partial + ptr[tid + 8];
+            ptr[tid] = partial = partial + ptr[tid + 4];
+            ptr[tid] = partial = partial + ptr[tid + 2];
+            ptr[tid] = partial = partial + ptr[tid + 1];
+        }
+
+        return ptr[tid - lane];
+    }
+}}} // namespace cv { namespace gpu { namespace device {
+
+#endif /* OPENCV_GPU_WARP_REDUCE_HPP__ */

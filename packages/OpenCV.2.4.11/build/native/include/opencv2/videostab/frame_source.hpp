@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009-2011, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,52 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_VIDEOSTAB_FRAME_SOURCE_HPP__
+#define __OPENCV_VIDEOSTAB_FRAME_SOURCE_HPP__
 
-#include "opencv2/core/core_c.h"
+#include <vector>
+#include <string>
 #include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
 #include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
+
+namespace cv
+{
+namespace videostab
+{
+
+class CV_EXPORTS IFrameSource
+{
+public:
+    virtual ~IFrameSource() {}
+    virtual void reset() = 0;
+    virtual Mat nextFrame() = 0;
+};
+
+class CV_EXPORTS NullFrameSource : public IFrameSource
+{
+public:
+    virtual void reset() {}
+    virtual Mat nextFrame() { return Mat(); }
+};
+
+class CV_EXPORTS VideoFileSource : public IFrameSource
+{
+public:
+    VideoFileSource(const std::string &path, bool volatileFrame = false);
+
+    virtual void reset();
+    virtual Mat nextFrame();
+
+    int frameCount() { return static_cast<int>(reader_.get(CV_CAP_PROP_FRAME_COUNT)); }
+    double fps() { return reader_.get(CV_CAP_PROP_FPS); }
+
+private:
+    std::string path_;
+    bool volatileFrame_;
+    VideoCapture reader_;
+};
+
+} // namespace videostab
+} // namespace cv
 
 #endif

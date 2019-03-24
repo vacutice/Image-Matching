@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,25 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_GPU_STREAM_ACCESSOR_HPP__
+#define __OPENCV_GPU_STREAM_ACCESSOR_HPP__
 
-#include "opencv2/core/core_c.h"
-#include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
+#include "opencv2/gpu/gpu.hpp"
+#include "cuda_runtime_api.h"
 
-#endif
+namespace cv
+{
+    namespace gpu
+    {
+        // This is only header file that depends on Cuda. All other headers are independent.
+        // So if you use OpenCV binaries you do noot need to install Cuda Toolkit.
+        // But of you wanna use GPU by yourself, may get cuda stream instance using the class below.
+        // In this case you have to install Cuda Toolkit.
+        struct StreamAccessor
+        {
+            CV_EXPORTS static cudaStream_t getStream(const Stream& stream);
+        };
+    }
+}
+
+#endif /* __OPENCV_GPU_STREAM_ACCESSOR_HPP__ */

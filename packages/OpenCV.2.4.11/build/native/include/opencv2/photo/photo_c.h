@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2008-2012, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,30 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_PHOTO_C_H__
+#define __OPENCV_PHOTO_C_H__
 
 #include "opencv2/core/core_c.h"
-#include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
 
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+/* Inpainting algorithms */
+enum
+{
+    CV_INPAINT_NS      =0,
+    CV_INPAINT_TELEA   =1
+};
+
+
+/* Inpaints the selected region in the image */
+CVAPI(void) cvInpaint( const CvArr* src, const CvArr* inpaint_mask,
+                       CvArr* dst, double inpaintRange, int flags );
+
+
+#ifdef __cplusplus
+} //extern "C"
+#endif
+
+#endif //__OPENCV_PHOTO_C_H__

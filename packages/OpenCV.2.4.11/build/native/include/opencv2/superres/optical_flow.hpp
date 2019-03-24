@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,37 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_SUPERRES_OPTICAL_FLOW_HPP__
+#define __OPENCV_SUPERRES_OPTICAL_FLOW_HPP__
 
-#include "opencv2/core/core_c.h"
 #include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
 
-#endif
+namespace cv
+{
+    namespace superres
+    {
+        class CV_EXPORTS DenseOpticalFlowExt : public cv::Algorithm
+        {
+        public:
+            virtual void calc(InputArray frame0, InputArray frame1, OutputArray flow1, OutputArray flow2 = noArray()) = 0;
+            virtual void collectGarbage() = 0;
+        };
+
+        CV_EXPORTS Ptr<DenseOpticalFlowExt> createOptFlow_Farneback();
+        CV_EXPORTS Ptr<DenseOpticalFlowExt> createOptFlow_Farneback_GPU();
+        CV_EXPORTS Ptr<DenseOpticalFlowExt> createOptFlow_Farneback_OCL();
+
+        CV_EXPORTS Ptr<DenseOpticalFlowExt> createOptFlow_Simple();
+
+        CV_EXPORTS Ptr<DenseOpticalFlowExt> createOptFlow_DualTVL1();
+        CV_EXPORTS Ptr<DenseOpticalFlowExt> createOptFlow_DualTVL1_GPU();
+        CV_EXPORTS Ptr<DenseOpticalFlowExt> createOptFlow_DualTVL1_OCL();
+
+        CV_EXPORTS Ptr<DenseOpticalFlowExt> createOptFlow_Brox_GPU();
+
+        CV_EXPORTS Ptr<DenseOpticalFlowExt> createOptFlow_PyrLK_GPU();
+        CV_EXPORTS Ptr<DenseOpticalFlowExt> createOptFlow_PyrLK_OCL();
+    }
+}
+
+#endif // __OPENCV_SUPERRES_OPTICAL_FLOW_HPP__

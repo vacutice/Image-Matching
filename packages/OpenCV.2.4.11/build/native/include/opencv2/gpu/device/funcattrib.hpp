@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,32 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_GPU_DEVICE_FUNCATTRIB_HPP_
+#define __OPENCV_GPU_DEVICE_FUNCATTRIB_HPP_
 
-#include "opencv2/core/core_c.h"
-#include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
+#include <cstdio>
 
-#endif
+namespace cv { namespace gpu { namespace device
+{
+    template<class Func>
+    void printFuncAttrib(Func& func)
+    {
+
+        cudaFuncAttributes attrs;
+        cudaFuncGetAttributes(&attrs, func);
+
+        printf("=== Function stats ===\n");
+        printf("Name: \n");
+        printf("sharedSizeBytes    = %d\n", attrs.sharedSizeBytes);
+        printf("constSizeBytes     = %d\n", attrs.constSizeBytes);
+        printf("localSizeBytes     = %d\n", attrs.localSizeBytes);
+        printf("maxThreadsPerBlock = %d\n", attrs.maxThreadsPerBlock);
+        printf("numRegs            = %d\n", attrs.numRegs);
+        printf("ptxVersion         = %d\n", attrs.ptxVersion);
+        printf("binaryVersion      = %d\n", attrs.binaryVersion);
+        printf("\n");
+        fflush(stdout);
+    }
+}}} // namespace cv { namespace gpu { namespace device
+
+#endif  /* __OPENCV_GPU_DEVICE_FUNCATTRIB_HPP_ */

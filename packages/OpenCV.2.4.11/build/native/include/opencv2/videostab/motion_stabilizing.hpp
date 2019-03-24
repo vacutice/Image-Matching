@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009-2011, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,67 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_VIDEOSTAB_MOTION_STABILIZING_HPP__
+#define __OPENCV_VIDEOSTAB_MOTION_STABILIZING_HPP__
 
-#include "opencv2/core/core_c.h"
+#include <vector>
 #include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
+
+namespace cv
+{
+namespace videostab
+{
+
+class CV_EXPORTS IMotionStabilizer
+{
+public:
+    virtual void stabilize(const Mat *motions, int size, Mat *stabilizationMotions) const = 0;
+
+#ifdef OPENCV_CAN_BREAK_BINARY_COMPATIBILITY
+    virtual ~IMotionStabilizer() {}
+#endif
+};
+
+class CV_EXPORTS MotionFilterBase : public IMotionStabilizer
+{
+public:
+    MotionFilterBase() : radius_(0) {}
+    virtual ~MotionFilterBase() {}
+
+    virtual void setRadius(int val) { radius_ = val; }
+    virtual int radius() const { return radius_; }
+
+    virtual void update() {}
+
+    virtual Mat stabilize(int index, const Mat *motions, int size) const = 0;
+    virtual void stabilize(const Mat *motions, int size, Mat *stabilizationMotions) const;
+
+protected:
+    int radius_;
+};
+
+class CV_EXPORTS GaussianMotionFilter : public MotionFilterBase
+{
+public:
+    GaussianMotionFilter() : stdev_(-1.f) {}
+
+    void setStdev(float val) { stdev_ = val; }
+    float stdev() const { return stdev_; }
+
+    virtual void update();
+
+    virtual Mat stabilize(int index, const Mat *motions, int size) const;
+
+private:
+    float stdev_;
+    std::vector<float> weight_;
+};
+
+CV_EXPORTS Mat ensureInclusionConstraint(const Mat &M, Size size, float trimRatio);
+
+CV_EXPORTS float estimateOptimalTrimRatio(const Mat &M, Size size);
+
+} // namespace videostab
+} // namespace
 
 #endif

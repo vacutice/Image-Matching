@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009-2011, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,71 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_VIDEOSTAB_DEBLURRING_HPP__
+#define __OPENCV_VIDEOSTAB_DEBLURRING_HPP__
 
-#include "opencv2/core/core_c.h"
+#include <vector>
 #include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
+
+namespace cv
+{
+namespace videostab
+{
+
+CV_EXPORTS float calcBlurriness(const Mat &frame);
+
+class CV_EXPORTS DeblurerBase
+{
+public:
+    DeblurerBase() : radius_(0), frames_(0), motions_(0) {}
+
+    virtual ~DeblurerBase() {}
+
+    virtual void setRadius(int val) { radius_ = val; }
+    virtual int radius() const { return radius_; }
+
+    virtual void setFrames(const std::vector<Mat> &val) { frames_ = &val; }
+    virtual const std::vector<Mat>& frames() const { return *frames_; }
+
+    virtual void setMotions(const std::vector<Mat> &val) { motions_ = &val; }
+    virtual const std::vector<Mat>& motions() const { return *motions_; }
+
+    virtual void setBlurrinessRates(const std::vector<float> &val) { blurrinessRates_ = &val; }
+    virtual const std::vector<float>& blurrinessRates() const { return *blurrinessRates_; }
+
+    virtual void update() {}
+
+    virtual void deblur(int idx, Mat &frame) = 0;
+
+protected:
+    int radius_;
+    const std::vector<Mat> *frames_;
+    const std::vector<Mat> *motions_;
+    const std::vector<float> *blurrinessRates_;
+};
+
+class CV_EXPORTS NullDeblurer : public DeblurerBase
+{
+public:
+    virtual void deblur(int /*idx*/, Mat &/*frame*/) {}
+};
+
+class CV_EXPORTS WeightingDeblurer : public DeblurerBase
+{
+public:
+    WeightingDeblurer();
+
+    void setSensitivity(float val) { sensitivity_ = val; }
+    float sensitivity() const { return sensitivity_; }
+
+    virtual void deblur(int idx, Mat &frame);
+
+private:
+    float sensitivity_;
+    Mat_<float> bSum_, gSum_, rSum_, wSum_;
+};
+
+} // namespace videostab
+} // namespace cv
 
 #endif

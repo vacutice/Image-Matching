@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,60 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_SUPERRES_HPP__
+#define __OPENCV_SUPERRES_HPP__
 
-#include "opencv2/core/core_c.h"
 #include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
 
-#endif
+namespace cv
+{
+    namespace superres
+    {
+        CV_EXPORTS bool initModule_superres();
+
+        class CV_EXPORTS FrameSource
+        {
+        public:
+            virtual ~FrameSource();
+
+            virtual void nextFrame(OutputArray frame) = 0;
+            virtual void reset() = 0;
+        };
+
+        CV_EXPORTS Ptr<FrameSource> createFrameSource_Empty();
+
+        CV_EXPORTS Ptr<FrameSource> createFrameSource_Video(const std::string& fileName);
+        CV_EXPORTS Ptr<FrameSource> createFrameSource_Video_GPU(const std::string& fileName);
+
+        CV_EXPORTS Ptr<FrameSource> createFrameSource_Camera(int deviceId = 0);
+
+        class CV_EXPORTS SuperResolution : public cv::Algorithm, public FrameSource
+        {
+        public:
+            void setInput(const Ptr<FrameSource>& frameSource);
+
+            void nextFrame(OutputArray frame);
+            void reset();
+
+            virtual void collectGarbage();
+
+        protected:
+            SuperResolution();
+
+            virtual void initImpl(Ptr<FrameSource>& frameSource) = 0;
+            virtual void processImpl(Ptr<FrameSource>& frameSource, OutputArray output) = 0;
+
+        private:
+            Ptr<FrameSource> frameSource_;
+            bool firstCall_;
+        };
+
+        // S. Farsiu , D. Robinson, M. Elad, P. Milanfar. Fast and robust multiframe super resolution.
+        // Dennis Mitzel, Thomas Pock, Thomas Schoenemann, Daniel Cremers. Video Super Resolution using Duality Based TV-L1 Optical Flow.
+        CV_EXPORTS Ptr<SuperResolution> createSuperResolution_BTVL1();
+        CV_EXPORTS Ptr<SuperResolution> createSuperResolution_BTVL1_GPU();
+        CV_EXPORTS Ptr<SuperResolution> createSuperResolution_BTVL1_OCL();
+    }
+}
+
+#endif // __OPENCV_SUPERRES_HPP__

@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,79 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_GPU_COMMON_HPP__
+#define __OPENCV_GPU_COMMON_HPP__
 
-#include "opencv2/core/core_c.h"
-#include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
+#include <cuda_runtime.h>
+#include "opencv2/core/cuda_devptrs.hpp"
 
+#ifndef CV_PI
+    #define CV_PI   3.1415926535897932384626433832795
 #endif
+
+#ifndef CV_PI_F
+    #ifndef CV_PI
+        #define CV_PI_F 3.14159265f
+    #else
+        #define CV_PI_F ((float)CV_PI)
+    #endif
+#endif
+
+#if defined(__GNUC__)
+    #define cudaSafeCall(expr)  ___cudaSafeCall(expr, __FILE__, __LINE__, __func__)
+#else /* defined(__CUDACC__) || defined(__MSVC__) */
+    #define cudaSafeCall(expr)  ___cudaSafeCall(expr, __FILE__, __LINE__)
+#endif
+
+namespace cv { namespace gpu
+{
+    void error(const char *error_string, const char *file, const int line, const char *func);
+
+    template <typename T> static inline bool isAligned(const T* ptr, size_t size)
+    {
+        return reinterpret_cast<size_t>(ptr) % size == 0;
+    }
+
+    static inline bool isAligned(size_t step, size_t size)
+    {
+        return step % size == 0;
+    }
+}}
+
+static inline void ___cudaSafeCall(cudaError_t err, const char *file, const int line, const char *func = "")
+{
+    if (cudaSuccess != err)
+        cv::gpu::error(cudaGetErrorString(err), file, line, func);
+}
+
+namespace cv { namespace gpu
+{
+    __host__ __device__ __forceinline__ int divUp(int total, int grain)
+    {
+        return (total + grain - 1) / grain;
+    }
+
+    namespace device
+    {
+        using cv::gpu::divUp;
+
+#ifdef __CUDACC__
+        typedef unsigned char uchar;
+        typedef unsigned short ushort;
+        typedef signed char schar;
+        #if defined (_WIN32) || defined (__APPLE__)
+            typedef unsigned int uint;
+        #endif
+
+        template<class T> inline void bindTexture(const textureReference* tex, const PtrStepSz<T>& img)
+        {
+            cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
+            cudaSafeCall( cudaBindTexture2D(0, tex, img.ptr(), &desc, img.cols, img.rows, img.step) );
+        }
+#endif // __CUDACC__
+    }
+}}
+
+
+
+#endif // __OPENCV_GPU_COMMON_HPP__

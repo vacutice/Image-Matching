@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,28 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_GPU_TRANSFORM_HPP__
+#define __OPENCV_GPU_TRANSFORM_HPP__
 
-#include "opencv2/core/core_c.h"
-#include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
+#include "common.hpp"
+#include "utility.hpp"
+#include "detail/transform_detail.hpp"
 
-#endif
+namespace cv { namespace gpu { namespace device
+{
+    template <typename T, typename D, typename UnOp, typename Mask>
+    static inline void transform(PtrStepSz<T> src, PtrStepSz<D> dst, UnOp op, const Mask& mask, cudaStream_t stream)
+    {
+        typedef TransformFunctorTraits<UnOp> ft;
+        transform_detail::TransformDispatcher<VecTraits<T>::cn == 1 && VecTraits<D>::cn == 1 && ft::smart_shift != 1>::call(src, dst, op, mask, stream);
+    }
+
+    template <typename T1, typename T2, typename D, typename BinOp, typename Mask>
+    static inline void transform(PtrStepSz<T1> src1, PtrStepSz<T2> src2, PtrStepSz<D> dst, BinOp op, const Mask& mask, cudaStream_t stream)
+    {
+        typedef TransformFunctorTraits<BinOp> ft;
+        transform_detail::TransformDispatcher<VecTraits<T1>::cn == 1 && VecTraits<T2>::cn == 1 && VecTraits<D>::cn == 1 && ft::smart_shift != 1>::call(src1, src2, dst, op, mask, stream);
+    }
+}}}
+
+#endif // __OPENCV_GPU_TRANSFORM_HPP__

@@ -11,7 +11,7 @@
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2009-2011, Willow Garage Inc., all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -40,22 +40,81 @@
 //
 //M*/
 
-#ifndef __OPENCV_ALL_HPP__
-#define __OPENCV_ALL_HPP__
+#ifndef __OPENCV_VIDEOSTAB_OPTICAL_FLOW_HPP__
+#define __OPENCV_VIDEOSTAB_OPTICAL_FLOW_HPP__
 
-#include "opencv2/core/core_c.h"
 #include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/highgui/highgui_c.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
+#include "opencv2/opencv_modules.hpp"
+
+#if defined(HAVE_OPENCV_GPU) && !defined(ANDROID)
+#  include "opencv2/gpu/gpu.hpp"
+#endif
+
+namespace cv
+{
+namespace videostab
+{
+
+class CV_EXPORTS ISparseOptFlowEstimator
+{
+public:
+    virtual ~ISparseOptFlowEstimator() {}
+    virtual void run(
+            InputArray frame0, InputArray frame1, InputArray points0, InputOutputArray points1,
+            OutputArray status, OutputArray errors) = 0;
+};
+
+class CV_EXPORTS IDenseOptFlowEstimator
+{
+public:
+    virtual ~IDenseOptFlowEstimator() {}
+    virtual void run(
+            InputArray frame0, InputArray frame1, InputOutputArray flowX, InputOutputArray flowY,
+            OutputArray errors) = 0;
+};
+
+class CV_EXPORTS PyrLkOptFlowEstimatorBase
+{
+public:
+    PyrLkOptFlowEstimatorBase() { setWinSize(Size(21, 21)); setMaxLevel(3); }
+
+    void setWinSize(Size val) { winSize_ = val; }
+    Size winSize() const { return winSize_; }
+
+    void setMaxLevel(int val) { maxLevel_ = val; }
+    int maxLevel() const { return maxLevel_; }
+
+protected:
+    Size winSize_;
+    int maxLevel_;
+};
+
+class CV_EXPORTS SparsePyrLkOptFlowEstimator
+        : public PyrLkOptFlowEstimatorBase, public ISparseOptFlowEstimator
+{
+public:
+    virtual void run(
+            InputArray frame0, InputArray frame1, InputArray points0, InputOutputArray points1,
+            OutputArray status, OutputArray errors);
+};
+
+#if defined(HAVE_OPENCV_GPU) && !defined(ANDROID)
+class CV_EXPORTS DensePyrLkOptFlowEstimatorGpu
+        : public PyrLkOptFlowEstimatorBase, public IDenseOptFlowEstimator
+{
+public:
+    DensePyrLkOptFlowEstimatorGpu();
+
+    virtual void run(
+            InputArray frame0, InputArray frame1, InputOutputArray flowX, InputOutputArray flowY,
+            OutputArray errors);
+private:
+    gpu::PyrLKOpticalFlow optFlowEstimator_;
+    gpu::GpuMat frame0_, frame1_, flowX_, flowY_, errors_;
+};
+#endif
+
+} // namespace videostab
+} // namespace cv
 
 #endif

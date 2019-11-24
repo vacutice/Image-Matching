@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>OpenCV</id>
+    <version>2.4.11</version>
+    <title>OpenCV</title>
+    <authors>Itseez</authors>
+    <owners>Itseez</owners>
+    <licenseUrl>http://opensource.org/licenses/bsd-license.php</licenseUrl>
+    <projectUrl>http://opencv.org/</projectUrl>
+    <iconUrl>http://opencvlibrary.svn.sourceforge.net/viewvc/opencvlibrary/trunk/opencv/doc/opencv-logo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>OpenCV (Open Source Computer Vision) is a library of programming functions for realtime computer vision. OpenCV is released under a BSD license and hence it’s free for both academic and commercial use. It has C++, C, Python and Java (Android) interfaces and supports Windows, Linux, Android, iOS and Mac OS. It has more than 2500 optimized algorithms. Adopted all around the world, OpenCV has more than 7 million downloads growing by nearly 200K/month. Usage ranges from interactive art, to mines inspection, stitching maps on the web on through advanced robotics.</description>
+    <summary>OpenCV is a library of programming functions for realtime computer vision.</summary>
+    <releaseNotes>Binaries and build targets for OpenCV 2.4.11 in the x86 and x64 platform architectures.</releaseNotes>
+    <copyright>© Copyright 2015, Itseez</copyright>
+    <tags>OpenCV Computer Vision Image Processing nativepackage</tags>
+  </metadata>
+</package>
